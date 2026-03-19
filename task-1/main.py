@@ -388,8 +388,7 @@ def insert_hr_docx(paragraph):
     pBdr.append(bottom)
 
 
-def open_site_after_delay(delay):
-    time.sleep(delay)
+def open_site():
     webbrowser.open("http://127.0.0.1:5000")
 
 def run_flask():
@@ -403,7 +402,7 @@ def kill_flask():
 if __name__ == '__main__':
     proc = threading.Thread(target=run_flask)
     proc.start()
-    threading.Thread(target=open_site_after_delay, args=(5,)).start()
+    threading.Thread(target=open_site).start()
     
 
 
