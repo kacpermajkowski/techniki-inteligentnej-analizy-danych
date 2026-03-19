@@ -14,20 +14,26 @@
         </label>
 
         <label class="header-label">Select output format:</label>
-            <div class="flex-row">
-                <label>
-                    <input type="radio" name="mode" value="pdf">
-                    pdf
-                </label>
-                <label>
-                    <input type="radio" name="mode" value="docx">
-                    docx
-                </label>
-                <label>
-                    <input type="radio" name="mode" value="both" checked>
-                    both
-                </label>
-            </div>
+        <div class="flex-row fit-content-center">
+            <label>
+                <input type="radio" name="format" value="pdf">
+                pdf
+            </label>
+            <label>
+                <input type="radio" name="format" value="docx">
+                docx
+            </label>
+            <label>
+                <input type="radio" name="format" value="both" checked>
+                both
+            </label>
+        </div>
+
+        <label class="header-label">Select output mode:</label>
+        <select name="mode">
+            <option value="document">Each row as document page(s)</option>
+            <option value="table">Table from XLSX rendered in document</option>
+        </select>
 
         <label class="header-label">Provide document title (optional):</label>
         <input type="text" name="title" placeholder="Document title">
@@ -36,24 +42,90 @@
         <input type="number" name="font_size" value="10">
 
         <label class="header-label">Text alignment:</label>
-        <select name="alignment">
-            <option value="left">Left</option>
-            <option value="center">Center</option>
-            <option value="right">Right</option>
-            <option value="justify">Justify</option>
-        </select>
+        <div class="flex-row fit-content-center">
+            <label>
+                <input type="radio" name="alignment" value="left" checked>
+                Left
+            </label>
+            <label>
+                <input type="radio" name="alignment" value="center">
+                Center
+            </label>
+            <label>
+                <input type="radio" name="alignment" value="right">
+                Right
+            </label>
+            <label>
+                <input type="radio" name="alignment" value="justify">
+                Justify
+            </label>
+        </div>
 
         <label class="header-label">Line spacing:</label>
-        <input type="number" name="line_spacing" step="0.1" min="0.5" max="10" value="1.5" >
+        <input type="number" name="line_spacing" step="0.1" min="0.5" max="10" value="1.5">
 
-        <label class="header-label">Paragraph spacing (pt):</label>
-        <input type="number" name="paragraph_spacing" value="10">
+        <label class="header-label table-hide">Paragraph spacing (pt):</label>
+        <input class="table-hide" type="number" name="paragraph_spacing" value="10">
 
-        <label class="header-label">Page numbering:</label>
-        <input type="checkbox" name="page_numbers" value="yes"> Enable page numbers
+        <label class="header-label table-hide">Page numbering:</label>
+        <input class="table-hide" type="checkbox" name="page_numbers" value="yes">
+        <span class="table-hide">Enable page numbers</span>
 
-
+        <button type="button" onclick="saveSettings()">Save settings</button>
         <input type="submit" value="Upload & convert">
     </form>
+
+    <script>
+        const mode = document.querySelector('select[name="mode"]');
+        const tableOnly = document.querySelectorAll('.table-hide');
+
+        function update() {
+            tableOnly.forEach(el => el.style.display = mode.value === 'table' ? 'none' : '');
+        }
+
+        function saveSettings() {
+            const form = document.querySelector('form');
+            const settings = {};
+
+            form.querySelectorAll('input, select').forEach(el => {
+                if (!el.name || el.type === 'file' || el.type === 'submit') return;
+                if (el.type === 'radio') {
+                    if (el.checked) settings[el.name] = el.value;
+                } else if (el.type === 'checkbox') {
+                    settings[el.name] = el.checked;
+                } else {
+                    settings[el.name] = el.value;
+                }
+            });
+
+            localStorage.setItem('settings', JSON.stringify(settings));
+            const btn = document.querySelector('button[type="button"]');
+            btn.textContent = 'Settings saved to local storage';
+            setTimeout(() => btn.textContent = 'Save settings', 1500);
+        }
+
+        function loadSettings() {
+            const raw = localStorage.getItem('settings');
+            if (!raw) return;
+
+            const settings = JSON.parse(raw);
+            const form = document.querySelector('form');
+
+            form.querySelectorAll('input, select').forEach(el => {
+                if (!el.name || el.type === 'file' || el.type === 'submit' || !(el.name in settings)) return;
+                if (el.type === 'radio') {
+                    el.checked = el.value === settings[el.name];
+                } else if (el.type === 'checkbox') {
+                    el.checked = settings[el.name];
+                } else {
+                    el.value = settings[el.name];
+                }
+            });
+        }
+
+        loadSettings();
+        mode.addEventListener('change', update);
+        update();
+    </script>
 </body>
 </html>

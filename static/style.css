@@ -55,6 +55,17 @@ input[type="checkbox"] {
     margin-left: 10px;
 }
 
+.fit-content-center{
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.fit-content-center input {
+    margin: 5px 0;
+}
+
 input[type="submit"] {
     width: 100%;
     margin-top: 20px;
@@ -67,6 +78,20 @@ input[type="submit"] {
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
+
+button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #cccccc;
+    border: 1px solid #a6a6a6;
+    font-size: 16px;
+    color: black;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
 
 input[type="submit"]:hover {
     background-color: #357abd;
