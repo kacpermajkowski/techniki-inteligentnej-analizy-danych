@@ -1,3 +1,4 @@
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -5,6 +6,7 @@ from docx import Document
 from docx.enum.section import WD_ORIENT
 from docx.enum.text import WD_BREAK, WD_ALIGN_PARAGRAPH
 
+from docx2pdf import convert
 
 from docx.oxml.shared import OxmlElement
 from docx.oxml.ns import qn
@@ -63,15 +65,19 @@ def upload_file():
     df = pandas.read_excel(file)
     base = Path(file.filename).stem
     format = request.form['format']
+    mode = request.form.get('mode', 'document')
     if format == 'pdf':
-        pdf_buffer = convert_to_pdf(base, df)
+        pdf_buffer = None
+        if mode == 'document':
+            pdf_buffer = convert_to_pdf(base, df)
+        if mode == 'table':
+            pdf_buffer = df_to_pdf_table(base, df)
         return send_file(pdf_buffer,
                          mimetype='application/pdf',
                          as_attachment=True,
                          download_name=base + '.pdf')
     elif format == 'docx':
         docx_buffer = None
-        mode= request.form.get('mode', 'document')
         if mode == 'document':
             docx_buffer = convert_to_docx(base, df)
         if mode == 'table':
@@ -81,8 +87,14 @@ def upload_file():
                          as_attachment=True,
                          download_name=base + '.docx')
     elif format == 'both':
-        pdf_buffer = convert_to_pdf(base, df)
-        docx_buffer = convert_to_docx(base, df)
+        pdf_buffer = None
+        docx_buffer = None
+        if mode == 'document':
+            docx_buffer = convert_to_docx(base, df)
+            pdf_buffer = convert_to_pdf(base, df)
+        if mode == 'table':
+            docx_buffer = df_to_docx_table(base, df)
+            pdf_buffer = df_to_pdf_table(base, df)
 
         zip_buffer = io.BytesIO()
 
@@ -294,6 +306,29 @@ def df_to_docx_table(base, df):
     doc.save(buf)
     buf.seek(0)
     return buf
+
+
+def df_to_pdf_table(base, df):
+    docx_buffer = df_to_docx_table(base, df)
+
+    docx_path = f"{base}.docx"
+    pdf_path = f"{base}.pdf"
+
+    try:
+        with open(docx_path, 'wb') as f:
+            f.write(docx_buffer.read())
+
+        convert(docx_path, pdf_path)
+
+        with open(pdf_path, 'rb') as f:
+            pdf_bytes = f.read()
+    finally:
+        if os.path.exists(docx_path):
+            os.remove(docx_path)
+        if os.path.exists(pdf_path):
+            os.remove(pdf_path)
+
+    return io.BytesIO(pdf_bytes)
 
 # Source: https://github.com/python-openxml/python-docx/issues/105#issuecomment-442786431
 def insert_hr_docx(paragraph):
