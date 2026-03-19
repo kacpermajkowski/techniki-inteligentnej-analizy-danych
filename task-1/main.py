@@ -1,6 +1,11 @@
+import signal
 import tempfile
 from datetime import datetime
 from pathlib import Path
+import threading
+import time
+import webbrowser
+import multiprocessing
 
 from docx import Document
 from docx.enum.section import WD_ORIENT
@@ -27,13 +32,19 @@ import os.path
 import zipfile
 import io
 
-align_map = {
-    "left": WD_ALIGN_PARAGRAPH.LEFT,
-    "center": WD_ALIGN_PARAGRAPH.CENTER,
-    "right": WD_ALIGN_PARAGRAPH.RIGHT,
-    "justify": WD_ALIGN_PARAGRAPH.JUSTIFY,
-}
-app = Flask(__name__)
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS  # PyInstaller temp folder
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+app = Flask(
+    __name__,
+    template_folder=resource_path("templates"),
+    static_folder=resource_path("static")
+)
 
 @app.route('/', methods=['GET'])
 def index():
@@ -53,6 +64,10 @@ def index():
 #
 #  request.form['name']
 #  request.form.get('name', 'default_value')  # Use this to avoid KeyError if the key is missing
+
+@app.route('/shutdown', methods=['POST', 'GET'])
+def shutdown():
+    kill_flask()
 
 @app.route('/upload-file', methods=['POST'])
 def upload_file():
@@ -112,6 +127,13 @@ def upload_file():
         return "Invalid mode. Supported modes: pdf, docx, both", 400
 
 def convert_to_pdf(base, df):
+    align_map = {
+        "left": TA_LEFT,
+        "center": TA_CENTER,
+        "right": TA_RIGHT,
+        "justify": TA_JUSTIFY,
+    }
+        
     pdfmetrics.registerFont(TTFont('Arial', 'arial.ttf'))
     pdfmetrics.registerFont(TTFont('Arial-Bold', 'C:/Windows/Fonts/arialbd.ttf'))
     pdfmetrics.registerFontFamily('Arial', normal='Arial', bold='Arial-Bold')
@@ -190,6 +212,13 @@ def convert_to_pdf(base, df):
     return buffer
 
 def convert_to_docx(base, df):
+    align_map = {
+        "left": WD_ALIGN_PARAGRAPH.LEFT,
+        "center": WD_ALIGN_PARAGRAPH.CENTER,
+        "right": WD_ALIGN_PARAGRAPH.RIGHT,
+        "justify": WD_ALIGN_PARAGRAPH.JUSTIFY,
+    }
+    
     document = Document()
 
     title = request.form['title']
@@ -352,7 +381,22 @@ def insert_hr_docx(paragraph):
     pBdr.append(bottom)
 
 
+def open_site_after_delay(delay):
+    time.sleep(delay)
+    webbrowser.open("http://127.0.0.1:5000")
+
+def run_flask():
+    app.run(port=5000)
+
+def kill_flask():
+    proc = multiprocessing.current_process()
+    os.kill(proc.pid, signal.SIGTERM) 
+    proc.join()
+
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80, debug=True)
+    proc = threading.Thread(target=run_flask)
+    proc.start()
+    threading.Thread(target=open_site_after_delay, args=(5,)).start()
+    
 
 
