@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>XLSX Converter</title>
+    <link rel="stylesheet" href="{{ url_for("static", filename="style.css") }}">
+</head>
+<body>
+    <form action="/upload-file", method="post", enctype="multipart/form-data">
+
+        <label class="flex-column header-label">Select a file:
+            <input type="file" name="file">
+        </label>
+
+        <label class="header-label">Select output format:</label>
+            <div class="flex-row">
+                <label>
+                    <input type="radio" name="mode" value="pdf">
+                    pdf
+                </label>
+                <label>
+                    <input type="radio" name="mode" value="docx">
+                    docx
+                </label>
+                <label>
+                    <input type="radio" name="mode" value="both" checked>
+                    both
+                </label>
+            </div>
+
+        <label class="header-label">Provide document title (optional):</label>
+        <input type="text" name="title" placeholder="Document title">
+
+        <label class="header-label">Text alignment:</label>
+        <select name="alignment">
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+            <option value="justify">Justify</option>
+        </select>
+
+        <label class="header-label">Line spacing:</label>
+        <input type="number" name="line_spacing" step="0.1" min="0.5" max="10" value="1.5" >
+
+        <label class="header-label">Paragraph spacing (px):</label>
+        <input type="number" name="paragraph_spacing" value="10">
+
+        <label class="header-label">Page numbering:</label>
+        <input type="checkbox" name="page_numbers" value="yes"> Enable page numbers
+
+
+        <input type="submit" value="Upload & convert">
+    </form>
+</body>
+</html>
