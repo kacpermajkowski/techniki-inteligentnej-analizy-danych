@@ -32,8 +32,9 @@ form {
     font-weight: bold;
 }
 
-label {
-
+h1 {
+    color: #4a90e2;
+    text-align: center;
 }
 
 input[type="text"],

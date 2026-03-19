@@ -6,8 +6,9 @@
     <link rel="stylesheet" href="{{ url_for("static", filename="style.css") }}">
 </head>
 <body>
-    <form action="/upload-file", method="post", enctype="multipart/form-data">
 
+    <form action="/upload-file" method="post" enctype="multipart/form-data">
+        <h1>XLSX to DOCX/PDF Converter</h1>
         <label class="flex-column header-label">Select a file:
             <input type="file" name="file">
         </label>
@@ -31,6 +32,9 @@
         <label class="header-label">Provide document title (optional):</label>
         <input type="text" name="title" placeholder="Document title">
 
+        <label class="header-label">Font size (pt):</label>
+        <input type="number" name="font_size" value="10">
+
         <label class="header-label">Text alignment:</label>
         <select name="alignment">
             <option value="left">Left</option>
@@ -42,7 +46,7 @@
         <label class="header-label">Line spacing:</label>
         <input type="number" name="line_spacing" step="0.1" min="0.5" max="10" value="1.5" >
 
-        <label class="header-label">Paragraph spacing (px):</label>
+        <label class="header-label">Paragraph spacing (pt):</label>
         <input type="number" name="paragraph_spacing" value="10">
 
         <label class="header-label">Page numbering:</label>
